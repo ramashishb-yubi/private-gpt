@@ -13,6 +13,7 @@ from gradio.themes.utils.colors import slate  # type: ignore
 from injector import inject, singleton
 from llama_index.core.llms import ChatMessage, ChatResponse, MessageRole
 from pydantic import BaseModel
+from gradio_modal import Modal
 
 from private_gpt.constants import PROJECT_ROOT_PATH
 from private_gpt.di import global_injector
@@ -22,7 +23,7 @@ from private_gpt.server.chunks.chunks_service import Chunk, ChunksService
 from private_gpt.server.ingest.ingest_service import IngestService
 from private_gpt.settings.settings import settings
 from private_gpt.ui.images import logo_svg
-
+from .customized_chat_interface import MYChatInterface
 logger = logging.getLogger(__name__)
 
 THIS_DIRECTORY_RELATIVE = Path(__file__).parent.relative_to(PROJECT_ROOT_PATH)
@@ -298,126 +299,251 @@ class PrivateGptUi:
 
     # Create components
 
-    def toggle_sidebar(self,state):
-        state = not state
+    def toggle_sidebar(self, state, input_text):
+        if input_text == "Private-gpt":
+            state = not state
         return gr.update(visible=state), state
 
     def _build_ui_blocks(self) -> gr.Blocks:
         logger.debug("Creating the UI blocks")
-        with gr.Blocks(
+
+        with (gr.Blocks(
                 title=UI_TAB_TITLE,
-                theme=gr.themes.Soft(primary_hue=slate),
-                css=".logo { "
-                    "display:flex;"
-                    "background-color: #C7BAFF;"
-                    "height: 50px;"
-                    "border-radius: 8px;"
-                    "align-content: center;"
-                    "justify-content: center;"
-                    "align-items: center;"
+                #theme='gradio/default',
+                theme=gr.themes.Default(
+                    primary_hue=gr.themes.Color(c100="#f5f5f5", c200="#e5e5e5", c300="#d4d4d4", c400="#a3a3a3",
+                                                c50="#ffffff", c500="#737373", c600="#525252", c700="#404040",
+                                                c800="#262626", c900="#171717", c950="#0f0f0f"),
+                    secondary_hue=gr.themes.Color(c100="#dbeafe", c200="#bfdbfe", c300="#93c5fd", c400="#60a5fa",
+                                                  c50="#4065c5", c500="#3b82f6", c600="#2563eb", c700="#1d4ed8",
+                                                  c800="#1e40af", c900="#1e3a8a", c950="#1d3660"),
+                    font=[gr.themes.GoogleFont('Sofia Pro')],
+                ).set(
+                    body_background_fill='*primary_50',
+                    body_text_color_dark='*link_text_color_hover',
+                    background_fill_primary='*primary_50',
+                    background_fill_secondary='*primary_50',
+                    border_color_accent='*primary_50',
+                    border_color_accent_dark='*neutral_900',
+                    code_background_fill='*primary_50',
+                    shadow_drop='none',
+                    shadow_drop_lg='none',
+                    shadow_inset='none',
+                    shadow_spread='none',
+                    shadow_spread_dark='none',
+                    block_background_fill='*primary_50',
+                    #block_border_color='*primary_50',
+                    #block_border_width='0px',
+                    block_label_background_fill='*primary_50',
+                    #block_label_border_color_dark='*primary_50',
+                    #block_label_border_width='0px',
+                    block_label_shadow='none',
+                    block_label_padding='0 px',
+                    block_shadow='none',
+                    panel_background_fill='*primary_50',
+                    #panel_border_color='*primary_50',
+                    button_primary_background_fill='*secondary_50',
+                    button_primary_background_fill_hover='*secondary_50',
+                    button_primary_text_color='*primary_50',
+                    button_secondary_background_fill='*primary_50',
+                    button_secondary_background_fill_hover='*primary_50',
+
+
+                ),
+
+
+                css=".logo {"
+                    "display: flex;"
+                    "height: 30px;"
+                    "border-radius: 0"
+                    "width: 100px"
+                    "justify-content: flex-start"
+                    "align-items: flex-start"
+                    "position: relative"
+                    "background-color: white;"
                     "}"
-                    ".logo img { height: 25% }"
+                    ".logo img {"
+                    "height: 100%;"
+                    "}"
                     ".contain { display: flex !important; flex-direction: column !important; }"
                     "#component-0, #component-3, #component-10, #component-8  { height: 100% !important; }"
-                    "#chatbot { flex-grow: 1 !important; overlow: auto !important;}"
-                    "#col1 { height: calc(16px) !important; }"
-                    "#col { height: calc(100vh - 112px - 16px) !important; }",
+                    "#chatbot { flex-grow: 1 !important; overlow: auto !important;border: 1px solid white;}"
+                    "#col { height: calc(100vh - 112px - 16px) !important; border: None; }"
+                    "#color{background-color: #F2F4F7;font-family: Sofia Pro;}"
+                    "#border{border: None; font-family: Sofia Pro;background-color: #FFFFFF;}"
+                    "#font{font-family: Sofia Pro;}"
+                    "#underline{.underline {"
+                                "position: absolute;"
+                                "left: 0;"
+                                "bottom: 0;"
+                                "width: 100%;"
+                                "height: 1px;"
+                                "background-color: black;"
+                                "};}"
+                    "#cborder{border: #F2F4F7;background-color: #F2F4F7;font-family: Sofia Pro;}"
+                    "#width{.modal-container.svelte-7knbu5 {"
+                    "position: centre;"
+                    "transform: translate(0%, +100%);"
+                    "top : 50%"
+                    "padding: 0 ;"
+                    "margin: 0 auto;"
+                    "max-width: 500px;"
+                    "max-height: 300px; "
+                    "overflow-y: auto;"
+                    "}"
+                    "}"
+                    "footer {visibility: hidden}"
+                    "#horizontal {border: None; background-color: #FFFFFF;underline {position: absolute;left: 0;bottom: 0;width: 100%;height: "
+                    "2px; background-color: #000; }}"
+                    "hr.solid {"
+                    "border-top: 1px D0D5DD;"
+                    "margin: 20px 0;"
+                    "width: 100vw;"
+                    "}"
+                    ".vertical-divider {"
+                    "border-left: 1px solid rgb(208, 213, 221);"
+                    "position: absolute;"
+                    "height: 100vh;"
+                    "top: -32px;"
+                    "bottom: 0;"
+                    "left: 50px"
+                    "}"
+                    """
+                        .radio-group .wrap {
+                            display: grid !important;
+                            grid-template-columns: 1fr 1fr;
+                        }
+                    """,
 
-        ) as blocks:
-            #with gr.Row():
-                #gr.HTML(f"<div class='logo'/><img src={logo_svg} alt=PrivateGPT></div")
+        ) as blocks):
+            with gr.Row(variant="panel", elem_id="horizontal"):
+                with gr.Column(scale=20):
+                    gr.HTML(f"""
+                                    <div class="logo">
+                                        <img src="{logo_svg}" alt="Logo">
+                                    </div>
+                                    <hr class="solid">
+                                """)
+                with gr.Column(scale=1):
+                    show_btn = gr.Button("Login", elem_id="border",elem_classes="underline",)
+                    with Modal(visible=False, elem_id="width") as modal:
+                        with gr.Row():
+                            None
+                        input_text = gr.Textbox(type="password", label="Password", placeholder="Enter password",
+                                                autofocus=True, elem_id="cborder"
+                                                )
+                        submit_button = gr.Button("Submit", size="sm",variant='primary',)
 
-            with gr.Row(equal_height=False,variant="panel"):
-                with gr.Column(scale=3, variant="panel",visible = False) as sidebar_left:
-                    with gr.Accordion("Admin", open=False):
-                        input_text = gr.Textbox(type="password", show_label=False, placeholder="Enter password to "
-                                                                                               "access", autofocus=True)
 
-                    @gr.render(inputs=input_text)
+
+            with gr.Row(equal_height=False, variant="panel"):
+                with gr.Column(scale=1, variant="panel",visible=False) as sidebar_left:
+                    sidebar_state = gr.State(False)
+                    show_btn.click(lambda: Modal(visible=True), None, modal)
+                    submit_button.click(lambda: Modal(visible=False), None, modal).then(self.toggle_sidebar, [sidebar_state,input_text],
+                                                                                  [sidebar_left, sidebar_state])
+                    @gr.render(inputs=input_text, triggers=[submit_button.click])
                     def show_split(text):
                         if len(text) == 0 or text != "Private-gpt":
-                            gr.Markdown("")
+                            raise gr.Error("Invalid Password")
                         else:
-                            mode = gr.Radio(
-                                MODES,
-                                label="Mode",
-                                value="Query Files",
-                            )
-                            upload_button = gr.components.UploadButton(
-                                "Upload File(s)",
-                                type="filepath",
-                                file_count="multiple",
-                                size="sm",
-                            )
-                            ingested_dataset = gr.List(
-                                self._list_ingested_files,
-                                headers=["File name"],
-                                label="Ingested Files",
-                                height=235,
-                                interactive=False,
-                                render=False,  # Rendered under the button
-                            )
-                            upload_button.upload(
-                                self._upload_file,
-                                inputs=upload_button,
-                                outputs=ingested_dataset,
-                            )
-                            ingested_dataset.change(
-                                self._list_ingested_files,
-                                outputs=ingested_dataset,
-                            )
-                            ingested_dataset.render()
-                            deselect_file_button = gr.components.Button(
-                                "De-select selected file", size="sm", interactive=False
-                            )
-                            selected_text = gr.components.Textbox(
-                                "All files", label="Selected for Query or Deletion", max_lines=1
-                            )
-                            delete_file_button = gr.components.Button(
-                                "🗑️ Delete selected file",
-                                size="sm",
-                                visible=settings().ui.delete_file_button_enabled,
-                                interactive=False,
-                            )
-                            delete_files_button = gr.components.Button(
-                                "⚠️ Delete ALL files",
-                                size="sm",
-                                visible=settings().ui.delete_all_files_button_enabled,
-                            )
-                            deselect_file_button.click(
-                                self._deselect_selected_file,
-                                outputs=[
-                                    delete_file_button,
-                                    deselect_file_button,
-                                    selected_text,
-                                ],
-                            )
-                            ingested_dataset.select(
-                                fn=self._selected_a_file,
-                                outputs=[
-                                    delete_file_button,
-                                    deselect_file_button,
-                                    selected_text,
-                                ],
-                            )
-                            delete_file_button.click(
-                                self._delete_selected_file,
-                                outputs=[
-                                    ingested_dataset,
-                                    delete_file_button,
-                                    deselect_file_button,
-                                    selected_text,
-                                ],
-                            )
-                            delete_files_button.click(
-                                self._delete_all_files,
-                                outputs=[
-                                    ingested_dataset,
-                                    delete_file_button,
-                                    deselect_file_button,
-                                    selected_text,
-                                ],
-                            )
+                            gr.HTML("""
+                                            <script>
+                                                document.getElementById('border').addEventListener('click', function() {
+                                                    location.reload();
+                                                });
+                                            </script>
+                                        """)
+                            with gr.Accordion("File Upload", open=False, elem_id="cborder"):
+
+                                mode = gr.Radio(
+                                    MODES,
+                                    label="Mode",
+                                    value="Query Files",
+
+                                )
+                                upload_button = gr.components.UploadButton(
+                                    "Upload File(s)",
+                                    type="filepath",
+                                    file_count="multiple",
+                                    size="sm",
+                                    variant='primary',
+                                )
+                                ingested_dataset = gr.List(
+                                    self._list_ingested_files,
+                                    elem_id="font",
+                                    headers=["Ingested Files"],
+                                    label="Ingested Files",
+                                    show_label=False,
+                                    height=235,
+                                    interactive=False,
+                                    render=False,  # Rendered under the button
+
+                                )
+                                upload_button.upload(
+                                    self._upload_file,
+                                    inputs=upload_button,
+                                    outputs=ingested_dataset,
+
+                                )
+                                ingested_dataset.change(
+                                    self._list_ingested_files,
+                                    outputs=ingested_dataset,
+                                )
+                                ingested_dataset.render()
+                                deselect_file_button = gr.components.Button(
+                                    "De-select selected file", size="sm", interactive=False,variant='secondary',
+                                )
+                                selected_text = gr.components.Textbox(
+                                    "All files", label="Selected for Query or Deletion", max_lines=1
+                                )
+                                delete_file_button = gr.components.Button(
+                                    "🗑️ Delete selected file",
+                                    size="sm",
+                                    visible=settings().ui.delete_file_button_enabled,
+                                    interactive=False,
+                                    variant='secondary',
+                                )
+                                delete_files_button = gr.components.Button(
+                                    "⚠️ Delete all files",
+                                    size="sm",
+                                    visible=settings().ui.delete_all_files_button_enabled,
+                                )
+                                deselect_file_button.click(
+                                    self._deselect_selected_file,
+                                    outputs=[
+                                        delete_file_button,
+                                        deselect_file_button,
+                                        selected_text,
+                                    ],
+                                )
+                                ingested_dataset.select(
+                                    fn=self._selected_a_file,
+                                    outputs=[
+                                        delete_file_button,
+                                        deselect_file_button,
+                                        selected_text,
+                                    ],
+                                )
+                                delete_file_button.click(
+                                    self._delete_selected_file,
+                                    outputs=[
+                                        ingested_dataset,
+                                        delete_file_button,
+                                        deselect_file_button,
+                                        selected_text,
+                                    ],
+                                )
+                                delete_files_button.click(
+                                    self._delete_all_files,
+                                    outputs=[
+                                        ingested_dataset,
+                                        delete_file_button,
+                                        deselect_file_button,
+                                        selected_text,
+                                    ],
+                                )
+
                             '''
                             # When mode changes, set default system prompt
                             mode.change(
@@ -464,12 +590,18 @@ class PrivateGptUi:
 
                         return model_mapping[llm_mode]
 
-                with gr.Column(scale=7,variant="panel") as main:
-                    # Determine the model label based on the value of PGPT_PROFILES
-                    gr.HTML(f"<div class='logo'/><img src={logo_svg} alt=PrivateGPT></div")
 
 
-                    with gr.Column(elem_id="col",variant="panel"):
+                with gr.Column(scale=10, variant="panel") as main:
+                    logo = f"""
+<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+  <img src="{logo_svg}" alt="Placeholder SVG" style="width: 200px; height: 100px; margin-bottom: 5px;">
+  <p style="margin: 0; color: #667085;">Hi, type in a message to start a conversation with Yubi GPT</p>
+</div>
+"""
+
+                    with gr.Column(elem_id="col", variant="panel"):
+                        submit_btn = gr.Button(value="Submit", render=False,variant='primary')
                         model_label = get_model_label()
                         if model_label is not None:
                             label_text = (
@@ -478,32 +610,39 @@ class PrivateGptUi:
                         else:
                             label_text = f"LLM: {settings().llm.mode}"
 
-                        _ = gr.ChatInterface(
+                        _ = MYChatInterface(
                             self._chat,
                             chatbot=gr.Chatbot(
                                 label="",
                                 show_label=False,
                                 show_copy_button=True,
                                 elem_id="chatbot",
+                                elem_classes="border",
                                 render=False,
                                 avatar_images=(
                                     None,
-                                    AVATAR_BOT,
+                                    None,
                                 ),
-                                layout="bubble",
+                                container = False,
+
+                                placeholder=logo
                             ),
-                            fill_height=True,
                             examples=["What are context-free grammars and why are they important in natural language "
                                       "processing?", "How does multiclass classification differ from binary "
+                                                     "classification?","How does multiclass classification differ from binary "
+                                                     "classification?","How does multiclass classification differ from binary "
+                                                     "classification?","How does multiclass classification differ from binary "
                                                      "classification?"],
+                            css="background-color: white",
+                            submit_btn=submit_btn,
+                            retry_btn="Retry",
+                            undo_btn="Undo",
+                            clear_btn="Clear",
+                            fill_height=True,
 
-
-                        #additional_inputs=[mode, upload_button, system_prompt_input]
+                            #additional_inputs=[mode, upload_button, system_prompt_input]
                         )
-                        sidebar_state = gr.State(False)
 
-                        btn_toggle_sidebar = gr.Button(" ADMIN")
-                        btn_toggle_sidebar.click(self.toggle_sidebar, [sidebar_state], [sidebar_left, sidebar_state])
         return blocks
 
     def get_ui_blocks(self) -> gr.Blocks:
