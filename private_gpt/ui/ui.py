@@ -23,13 +23,15 @@ from private_gpt.server.chunks.chunks_service import Chunk, ChunksService
 from private_gpt.server.ingest.ingest_service import IngestService
 from private_gpt.settings.settings import settings
 from private_gpt.ui.images import logo_svg
+
 from .customized_chat_interface import MYChatInterface
 logger = logging.getLogger(__name__)
 
 THIS_DIRECTORY_RELATIVE = Path(__file__).parent.relative_to(PROJECT_ROOT_PATH)
 # Should be "private_gpt/ui/avatar-bot.ico"
 AVATAR_BOT = THIS_DIRECTORY_RELATIVE / "avatar-bot.ico"
-
+user_svg =  THIS_DIRECTORY_RELATIVE / "user-avatar.svg"
+generated_svg = THIS_DIRECTORY_RELATIVE /"Yubi_Logo-Icon_FullColour_RGB_Vector_AW.svg"
 UI_TAB_TITLE = "YubiGPT"
 
 SOURCES_SEPARATOR = "\n\n Sources: \n"
@@ -317,23 +319,22 @@ class PrivateGptUi:
                     secondary_hue=gr.themes.Color(c100="#dbeafe", c200="#bfdbfe", c300="#93c5fd", c400="#60a5fa",
                                                   c50="#4065c5", c500="#3b82f6", c600="#2563eb", c700="#1d4ed8",
                                                   c800="#1e40af", c900="#1e3a8a", c950="#1d3660"),
-                    font=[gr.themes.GoogleFont('Sofia Pro')],
+                    #font=[gr.themes.GoogleFont('Sofia Pro')],
                 ).set(
                     body_background_fill='*primary_50',
                     body_text_color_dark='*link_text_color_hover',
                     background_fill_primary='*primary_50',
                     background_fill_secondary='*primary_50',
                     border_color_accent='*primary_50',
-                    border_color_accent_dark='*neutral_900',
+                    border_color_accent_subdued='*primary_50',
                     code_background_fill='*primary_50',
                     shadow_drop='none',
+                    color_accent='*primary_50',
                     shadow_drop_lg='none',
                     shadow_inset='none',
                     shadow_spread='none',
                     shadow_spread_dark='none',
                     block_background_fill='*primary_50',
-                    #block_border_color='*primary_50',
-                    #block_border_width='0px',
                     block_label_background_fill='*primary_50',
                     #block_label_border_color_dark='*primary_50',
                     #block_label_border_width='0px',
@@ -369,9 +370,8 @@ class PrivateGptUi:
                     "#component-0, #component-3, #component-10, #component-8  { height: 100% !important; }"
                     "#chatbot { flex-grow: 1 !important; overlow: auto !important;border: 1px solid white;}"
                     "#col { height: calc(100vh - 112px - 16px) !important; border: None; }"
-                    "#color{background-color: #F2F4F7;font-family: Sofia Pro;}"
-                    "#border{border: None; font-family: Sofia Pro;background-color: #FFFFFF;}"
-                    "#font{font-family: Sofia Pro;}"
+                    "#color{background-color: #F2F4F7;}"
+                    "#border{border: None; background-color: #FFFFFF;}"
                     "#underline{.underline {"
                                 "position: absolute;"
                                 "left: 0;"
@@ -380,7 +380,7 @@ class PrivateGptUi:
                                 "height: 1px;"
                                 "background-color: black;"
                                 "};}"
-                    "#cborder{border: #F2F4F7;background-color: #F2F4F7;font-family: Sofia Pro;}"
+                    "#cborder{border: #F2F4F7;background-color: #F2F4F7;}"
                     "#width{.modal-container.svelte-7knbu5 {"
                     "position: centre;"
                     "transform: translate(0%, +100%);"
@@ -471,7 +471,6 @@ class PrivateGptUi:
                                 )
                                 ingested_dataset = gr.List(
                                     self._list_ingested_files,
-                                    elem_id="font",
                                     headers=["Ingested Files"],
                                     label="Ingested Files",
                                     show_label=False,
@@ -602,6 +601,10 @@ class PrivateGptUi:
 
                     with gr.Column(elem_id="col", variant="panel"):
                         submit_btn = gr.Button(value="Submit", render=False,variant='primary')
+                        #retry_btn = gr.Button(value="Retry", render=False, variant='secondary')
+                        #undo_btn = gr.Button(value="Undo", render=False, variant='secondary')
+                        #clear_btn = gr.Button(value="Clear", render=False, variant='secondary')
+
                         model_label = get_model_label()
                         if model_label is not None:
                             label_text = (
@@ -620,19 +623,15 @@ class PrivateGptUi:
                                 elem_classes="border",
                                 render=False,
                                 avatar_images=(
-                                    None,
-                                    None,
+                                    user_svg,
+                                    generated_svg,
                                 ),
                                 container = False,
-
-                                placeholder=logo
+                                placeholder=logo,
+                                layout = 'panel',
                             ),
-                            examples=["What are context-free grammars and why are they important in natural language "
-                                      "processing?", "How does multiclass classification differ from binary "
-                                                     "classification?","How does multiclass classification differ from binary "
-                                                     "classification?","How does multiclass classification differ from binary "
-                                                     "classification?","How does multiclass classification differ from binary "
-                                                     "classification?"],
+
+                            examples=["What are context free grammar and why are tey important in natural language processing", "How does multiclass classification differ from binary classification","How does multiclass classification differ from binary classification"],
                             css="background-color: white",
                             submit_btn=submit_btn,
                             retry_btn="Retry",

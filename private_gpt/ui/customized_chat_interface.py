@@ -214,92 +214,91 @@ class MYChatInterface(Blocks):
                             )
 
             with Row():
-                for btn in [retry_btn, undo_btn, clear_btn]:
-                    if btn is not None:
-                        if isinstance(btn, Button):
-                            btn.render()
-                        elif isinstance(btn, str):
-                            btn = Button(
-                                btn, variant="secondary", size="sm", min_width=20
-                            )
-                        else:
-                            raise ValueError(
-                                f"All the _btn parameters must be a gr.Button, string, or None, not {type(btn)}"
-                            )
-                    self.buttons.append(btn)  # type: ignore
+                with Column(scale=6):
+                    None
+
+                with Column(scale=2):
+                    with Row():
+                        for btn in [retry_btn, undo_btn, clear_btn]:
+                            if btn is not None:
+                                if isinstance(btn, Button):
+                                    btn.render()
+                                elif isinstance(btn, str):
+                                    btn = Button(
+                                        btn, variant="secondary", size="sm", min_width=10
+                                    )
+                                else:
+                                    raise ValueError(
+                                        f"All the _btn parameters must be a gr.Button, string, or None, not {type(btn)}"
+                                    )
+                            self.buttons.append(btn)  # type: ignore
 
 
-
-
-
-
-            with Group():
-                with Row():
-                    if textbox:
-                        if self.multimodal:
-                            submit_btn = None
-                        else:
-                            textbox.container = False
-                        textbox.show_label = False
-                        textbox_ = textbox.render()
-                        if not isinstance(textbox_, (Textbox, MultimodalTextbox)):
-                            raise TypeError(
-                                f"Expected a gr.Textbox or gr.MultimodalTextbox component, but got {type(textbox_)}"
-                            )
-                        self.textbox = textbox_
-                    elif self.multimodal:
+            with Row():
+                if textbox:
+                    if self.multimodal:
                         submit_btn = None
-                        self.textbox = MultimodalTextbox(
-                            show_label=False,
-                            label="Message",
-                            placeholder="Type a message...",
-                            scale=6,
-                            autofocus=autofocus,
+                    else:
+                        textbox.container = False
+                    textbox.show_label = False
+                    textbox_ = textbox.render()
+                    if not isinstance(textbox_, (Textbox, MultimodalTextbox)):
+                        raise TypeError(
+                            f"Expected a gr.Textbox or gr.MultimodalTextbox component, but got {type(textbox_)}"
+                        )
+                    self.textbox = textbox_
+                elif self.multimodal:
+                    submit_btn = None
+                    self.textbox = MultimodalTextbox(
+                        show_label=False,
+                        label="Message",
+                        placeholder="Type a message...",
+                        scale=6,
+                        autofocus=autofocus,
+                    )
+                else:
+                    self.textbox.render()
+                if submit_btn is not None and not multimodal:
+                    if isinstance(submit_btn, Button):
+                        submit_btn.render()
+                    elif isinstance(submit_btn, str):
+                        submit_btn = Button(
+                            submit_btn,
+                            variant="primary",
+                            scale=1,
+                            min_width=150,
                         )
                     else:
-                        self.textbox.render()
-                    if submit_btn is not None and not multimodal:
-                        if isinstance(submit_btn, Button):
-                            submit_btn.render()
-                        elif isinstance(submit_btn, str):
-                            submit_btn = Button(
-                                submit_btn,
-                                variant="primary",
-                                scale=1,
-                                min_width=150,
-                            )
-                        else:
-                            raise ValueError(
-                                f"The submit_btn parameter must be a gr.Button, string, or None, not {type(submit_btn)}"
-                            )
-                    if stop_btn is not None:
-                        if isinstance(stop_btn, Button):
-                            stop_btn.visible = False
-                            stop_btn.render()
-                        elif isinstance(stop_btn, str):
-                            stop_btn = Button(
-                                stop_btn,
-                                variant="stop",
-                                visible=False,
-                                scale=1,
-                                min_width=150,
-                            )
-                        else:
-                            raise ValueError(
-                                f"The stop_btn parameter must be a gr.Button, string, or None, not {type(stop_btn)}"
-                            )
-                    self.buttons.extend([submit_btn, stop_btn])  # type: ignore
+                        raise ValueError(
+                            f"The submit_btn parameter must be a gr.Button, string, or None, not {type(submit_btn)}"
+                        )
+                if stop_btn is not None:
+                    if isinstance(stop_btn, Button):
+                        stop_btn.visible = False
+                        stop_btn.render()
+                    elif isinstance(stop_btn, str):
+                        stop_btn = Button(
+                            stop_btn,
+                            variant="stop",
+                            visible=False,
+                            scale=1,
+                            min_width=150,
+                        )
+                    else:
+                        raise ValueError(
+                            f"The stop_btn parameter must be a gr.Button, string, or None, not {type(stop_btn)}"
+                        )
+                self.buttons.extend([submit_btn, stop_btn])  # type: ignore
 
-                self.fake_api_btn = Button("Fake API", visible=False)
-                self.fake_response_textbox = Textbox(label="Response", visible=False)
-                (
-                    self.retry_btn,
-                    self.undo_btn,
-                    self.clear_btn,
-                    self.submit_btn,
-                    self.stop_btn,
-                ) = self.buttons
-
+            self.fake_api_btn = Button("Fake API", visible=False)
+            self.fake_response_textbox = Textbox(label="Response", visible=False)
+            (
+                self.retry_btn,
+                self.undo_btn,
+                self.clear_btn,
+                self.submit_btn,
+                self.stop_btn,
+            ) = self.buttons
 
             any_unrendered_inputs = any(
                 not inp.is_rendered for inp in self.additional_inputs
