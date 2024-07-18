@@ -25,13 +25,14 @@ from private_gpt.settings.settings import settings
 from private_gpt.ui.images import logo_svg
 
 from .customized_chat_interface import MYChatInterface
+
 logger = logging.getLogger(__name__)
 
 THIS_DIRECTORY_RELATIVE = Path(__file__).parent.relative_to(PROJECT_ROOT_PATH)
 # Should be "private_gpt/ui/avatar-bot.ico"
 AVATAR_BOT = THIS_DIRECTORY_RELATIVE / "avatar-bot.ico"
-user_svg =  THIS_DIRECTORY_RELATIVE / "user-avatar.svg"
-generated_svg = THIS_DIRECTORY_RELATIVE /"Yubi_Logo-Icon_FullColour_RGB_Vector_AW.svg"
+user_svg = THIS_DIRECTORY_RELATIVE / "user-avatar.svg"
+generated_svg = THIS_DIRECTORY_RELATIVE / "Yubi_Logo-Icon_FullColour_RGB_Vector_AW.svg"
 UI_TAB_TITLE = "YubiGPT"
 
 SOURCES_SEPARATOR = "\n\n Sources: \n"
@@ -349,9 +350,7 @@ class PrivateGptUi:
                     button_secondary_background_fill='*primary_50',
                     button_secondary_background_fill_hover='*primary_50',
 
-
                 ),
-
 
                 css=".logo {"
                     "display: flex;"
@@ -371,15 +370,15 @@ class PrivateGptUi:
                     "#chatbot { flex-grow: 1 !important; overlow: auto !important;border: 1px solid white;}"
                     "#col { height: calc(100vh - 112px - 16px) !important; border: None; }"
                     "#color{background-color: #F2F4F7;}"
-                    "#border{border: None; background-color: #FFFFFF;}"
+                    "#border{border: None;  text-align: right;}"
                     "#underline{.underline {"
-                                "position: absolute;"
-                                "left: 0;"
-                                "bottom: 0;"
-                                "width: 100%;"
-                                "height: 1px;"
-                                "background-color: black;"
-                                "};}"
+                    "position: absolute;"
+                    "left: 0;"
+                    "bottom: 0;"
+                    "width: 100%;"
+                    "height: 1px;"
+                    "background-color: black;"
+                    "};}"
                     "#cborder{border: #F2F4F7;background-color: #F2F4F7;}"
                     "#width{.modal-container.svelte-7knbu5 {"
                     "position: centre;"
@@ -393,6 +392,7 @@ class PrivateGptUi:
                     "}"
                     "}"
                     "footer {visibility: hidden}"
+                    "#border{width: 650px;}"
                     "#horizontal {border: None; background-color: #FFFFFF;underline {position: absolute;left: 0;bottom: 0;width: 100%;height: "
                     "2px; background-color: #000; }}"
                     "hr.solid {"
@@ -425,23 +425,23 @@ class PrivateGptUi:
                                     <hr class="solid">
                                 """)
                 with gr.Column(scale=1):
-                    show_btn = gr.Button("Login", elem_id="border",elem_classes="underline",)
+                    show_btn = gr.Button("Login", elem_id="border", elem_classes="underline", )
                     with Modal(visible=False, elem_id="width") as modal:
                         with gr.Row():
                             None
                         input_text = gr.Textbox(type="password", label="Password", placeholder="Enter password",
                                                 autofocus=True, elem_id="cborder"
                                                 )
-                        submit_button = gr.Button("Submit", size="sm",variant='primary',)
-
-
+                        submit_button = gr.Button("Submit", size="sm", variant='primary', )
 
             with gr.Row(equal_height=False, variant="panel"):
-                with gr.Column(scale=1, variant="panel",visible=False) as sidebar_left:
+                with gr.Column(scale=1, variant="panel", visible=False) as sidebar_left:
                     sidebar_state = gr.State(False)
                     show_btn.click(lambda: Modal(visible=True), None, modal)
-                    submit_button.click(lambda: Modal(visible=False), None, modal).then(self.toggle_sidebar, [sidebar_state,input_text],
-                                                                                  [sidebar_left, sidebar_state])
+                    submit_button.click(lambda: Modal(visible=False), None, modal).then(self.toggle_sidebar,
+                                                                                        [sidebar_state, input_text],
+                                                                                        [sidebar_left, sidebar_state])
+
                     @gr.render(inputs=input_text, triggers=[submit_button.click])
                     def show_split(text):
                         if len(text) == 0 or text != "Private-gpt":
@@ -491,7 +491,7 @@ class PrivateGptUi:
                                 )
                                 ingested_dataset.render()
                                 deselect_file_button = gr.components.Button(
-                                    "De-select selected file", size="sm", interactive=False,variant='secondary',
+                                    "De-select selected file", size="sm", interactive=False, variant='secondary',
                                 )
                                 selected_text = gr.components.Textbox(
                                     "All files", label="Selected for Query or Deletion", max_lines=1
@@ -589,8 +589,6 @@ class PrivateGptUi:
 
                         return model_mapping[llm_mode]
 
-
-
                 with gr.Column(scale=10, variant="panel") as main:
                     logo = f"""
 <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
@@ -600,11 +598,12 @@ class PrivateGptUi:
 """
 
                     with gr.Column(elem_id="col", variant="panel"):
-                        submit_btn = gr.Button(value="Submit", render=False,variant='primary')
-                        #retry_btn = gr.Button(value="Retry", render=False, variant='secondary')
-                        #undo_btn = gr.Button(value="Undo", render=False, variant='secondary')
-                        #clear_btn = gr.Button(value="Clear", render=False, variant='secondary')
-
+                        submit_btn = gr.Button(value="Submit", render=False, variant='primary')
+                        examples_load_from_settings = settings().Examples.mode
+                        if examples_load_from_settings == "hr_examples":
+                            examples = settings().Examples.hr_examples
+                        else:
+                            examples = settings().Examples.co_lending_examples
                         model_label = get_model_label()
                         if model_label is not None:
                             label_text = (
@@ -626,12 +625,12 @@ class PrivateGptUi:
                                     user_svg,
                                     generated_svg,
                                 ),
-                                container = False,
+                                container=False,
                                 placeholder=logo,
-                                layout = 'panel',
+                                layout='panel',
                             ),
 
-                            examples=["What are context free grammar and why are tey important in natural language processing", "How does multiclass classification differ from binary classification","How does multiclass classification differ from binary classification"],
+                            examples=examples,
                             css="background-color: white",
                             submit_btn=submit_btn,
                             retry_btn="Retry",
@@ -651,7 +650,7 @@ class PrivateGptUi:
 
     def mount_in_app(self, app: FastAPI, path: str) -> None:
         blocks = self.get_ui_blocks()
-        blocks.queue()
+        blocks.queue(default_concurrency_limit=10)
         logger.info("Mounting the gradio UI, at path=%s", path)
         gr.mount_gradio_app(app, blocks, path=path)
 
@@ -659,5 +658,5 @@ class PrivateGptUi:
 if __name__ == "__main__":
     ui = global_injector.get(PrivateGptUi)
     _blocks = ui.get_ui_blocks()
-    _blocks.queue()
+    _blocks.queue(default_concurrency_limit=10)
     _blocks.launch(debug=False, show_api=False)

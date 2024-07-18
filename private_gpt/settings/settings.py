@@ -416,6 +416,13 @@ class QdrantSettings(BaseModel):
     )
 
 
+class Examples(BaseModel):
+    mode: Literal[
+        "hr_examples", "co_lending_examples"
+    ]
+    hr_examples: list[str]
+    co_lending_examples: list[str]
+
 class Settings(BaseModel):
     server: ServerSettings
     data: DataSettings
@@ -433,6 +440,7 @@ class Settings(BaseModel):
     rag: RagSettings
     qdrant: QdrantSettings | None = None
     postgres: PostgresSettings | None = None
+    Examples: Examples
 
 
 """

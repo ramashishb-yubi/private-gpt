@@ -113,3 +113,26 @@ azopenai:
   api_version: "2023-05-15"
   embedding_model: text-embedding-ada-002
   llm_model: gpt-35-turbo
+
+Examples:
+  mode : co_lending_examples
+  hr_examples:
+    - "What are the conditions for relocation?"
+    - "When can we take a car on lease?"
+    - "What are the benefits available for deceased, disabled people and their dependents?"
+    - "Can we take a leave without pay?"
+    - "How long are paternity leaves?"
+    - "What is the procedure for applying for leaves?"
+    - "What are the maternity and parenthood leaves?"
+    - "What kinds of Insurance Policies are available?"
+    - "Is it possible to get an advance on the salary or take a medical emergency leave?"
+  co_lending_examples:
+    - "How to apportion collection on the platform?"
+    - "What is the status of the partnership with AXIS?"
+    - "How many tickets were raised around the co-lending platform?"
+    - "Can you summarise the lender's SOP for disbursement?"
+    - "Please summarise the tickets raised so far."
+
+
+
+
