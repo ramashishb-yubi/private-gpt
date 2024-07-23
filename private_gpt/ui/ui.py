@@ -309,8 +309,18 @@ class PrivateGptUi:
 
     def _build_ui_blocks(self) -> gr.Blocks:
         logger.debug("Creating the UI blocks")
+        js_func = """
+        function refresh() {
+            const url = new URL(window.location);
 
+    if (url.searchParams.get('__theme') !== 'light') {
+        url.searchParams.set('__theme', 'light');
+        window.location.href = url.href;
+    }
+        }
+        """
         with (gr.Blocks(
+                js=js_func,
                 title=UI_TAB_TITLE,
                 #theme='gradio/default',
                 theme=gr.themes.Default(
@@ -367,7 +377,7 @@ class PrivateGptUi:
                     "}"
                     ".contain { display: flex !important; flex-direction: column !important; }"
                     "#component-0, #component-3, #component-10, #component-8  { height: 100% !important; }"
-                    "#chatbot { flex-grow: 1 !important; overlow: auto !important;border: 1px solid white;}"
+                    "#chatbot { flex-grow: 1 !important; overflow: auto !important;border: 1px solid white;}"
                     "#col { height: calc(100vh - 112px - 16px) !important; border: None; }"
                     "#color{background-color: #F2F4F7;}"
                     "#border{border: None;  text-align: right;}"
